@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@/app/context/UserContext";
+
 import MyPostCard from "@/components/MyPostCard";
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
@@ -23,7 +23,7 @@ type Job = {
 };
 
 export default function Page() {
-  const user = useUser();
+ 
   const [jobs, setJobs] = useState<Job[]>([]);
   const token =
     typeof window !== "undefined"
@@ -102,7 +102,7 @@ export default function Page() {
       >
         <div className="mx-auto max-w-4xl text-center space-y-6">
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-gray-700">
-            Welcome back, <span className="text-blue-600">{user?.username}</span>
+            Welcome back, 
           </h3>
           <p className="text-gray-500">
             Start hiring by posting a new role or managing your existing listings.
