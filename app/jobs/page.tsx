@@ -1,9 +1,8 @@
 "use client"
+
 export const dynamic = "force-dynamic"
 
-
-
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import JobCard from "@/components/JobCard"
 import SkelitonLoading from "@/components/SkelitonLoading"
@@ -22,13 +21,14 @@ const fadeUp = {
   visible: { opacity: 1, y: 0 },
 }
 
-const Page = () => {
+
+
+function JobsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const searchFromUrl = searchParams.get("search") || ""
   const [search, setSearch] = useState(searchFromUrl)
-
   const [jobs, setJobs] = useState<Job[] | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +37,10 @@ const Page = () => {
   }, [searchFromUrl])
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token")
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("access_token")
+        : null
 
     async function fetchJobs() {
       setLoading(true)
@@ -85,27 +88,23 @@ const Page = () => {
         transition={{ duration: 0.5 }}
         className="mx-auto max-w-7xl"
       >
-        {/* HEADER CARD */}
         <div className="mb-14 rounded-2xl bg-white p-8 shadow-lg">
-          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight text-gray-800">
+          <h1 className="text-4xl font-extrabold text-gray-800">
             Explore Opportunities
           </h1>
+
           <p className="mt-3 max-w-2xl text-gray-500">
-            Discover jobs that match your skills and interests. Use search to
-            narrow down roles and apply confidently.
+            Discover jobs that match your skills and interests.
           </p>
 
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <input
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search by role, company, or location..."
-              className="w-full sm:w-96 rounded-xl border px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <input
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search by role, company, or location..."
+            className="mt-6 w-full sm:w-96 rounded-xl border px-5 py-3 text-sm"
+          />
         </div>
 
-     
         {loading ? (
           <SkelitonLoading />
         ) : jobs && jobs.length > 0 ? (
@@ -126,4 +125,12 @@ const Page = () => {
   )
 }
 
-export default Page
+
+
+export default function Page() {
+  return (
+    <Suspense fallback={<SkelitonLoading />}>
+      <JobsContent />
+    </Suspense>
+  )
+}
