@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic"
 
 import { Suspense, useEffect, useState } from "react"
-import { redirect, useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
 import {
   AlertDialog,
@@ -34,16 +34,17 @@ type Job = {
 function JobDetailContent() {
   const { user, loading } = useUser()
   const { id } = useParams()
-  const jobId = id as string
+  const router = useRouter()
 
+  const jobId = id as string
   const [job, setJob] = useState<Job | null>(null)
-  const [hasApplied, setHasApplied] = useState(false)
 
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("access_token")
       : null
 
+  // 🔹 Fetch job details
   useEffect(() => {
     if (!jobId) return
 
@@ -51,9 +52,9 @@ function JobDetailContent() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/${jobId}/`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
         }
       )
 
@@ -66,37 +67,14 @@ function JobDetailContent() {
     fetchJob()
   }, [jobId, token])
 
-  useEffect(() => {
-    if (!jobId || user?.role !== "candidate") return
-
-    async function checkIfApplied() {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/candidate/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (!res.ok) return
-
-      const applications = await res.json()
-      const applied = applications.some(
-        (app: any) => app.job === Number(jobId)
-      )
-
-      setHasApplied(applied)
-    }
-
-    checkIfApplied()
-  }, [jobId, token, user])
-
   if (loading || !job) {
     return <SkelitonLoading />
   }
 
+  // 🔹 Delete job (employer only)
   const handleDeleteJob = async () => {
+    if (!token) return
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/delete/${jobId}/`,
       {
@@ -108,7 +86,7 @@ function JobDetailContent() {
     )
 
     if (!res.ok) return
-    redirect("/employer/jobs")
+    router.push("/employer/jobs")
   }
 
   return (
@@ -118,30 +96,37 @@ function JobDetailContent() {
           {job.title}
         </h1>
 
-        <p className="mt-4 text-gray-500">📍 {job.location}</p>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
+          <span>📍 {job.location}</span>
+          {job.company_name && <span>🏢 {job.company_name}</span>}
+          <span>
+            🗓️ {new Date(job.created_at).toLocaleDateString()}
+          </span>
+        </div>
 
-        <p className="mt-6 text-gray-700 whitespace-pre-line">
-          {job.description}
-        </p>
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Job Description
+          </h2>
+          <p className="whitespace-pre-line text-gray-700">
+            {job.description}
+          </p>
+        </div>
 
         <div className="fixed bottom-10 right-10 flex gap-3">
           {user?.role === "candidate" ? (
-            hasApplied ? (
-              <button disabled className="bg-green-100 px-6 py-2 rounded-md">
-                ✅ Applied
-              </button>
-            ) : (
-              <JobApplicationForm jobId={jobId} />
-            )
+            <JobApplicationForm jobId={jobId} />
           ) : (
             <>
               <EditJobForm />
+
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button className="bg-red-600 text-white px-6 py-2 rounded-md">
+                  <button className="bg-red-600 px-6 py-2 text-white rounded-md">
                     Delete
                   </button>
                 </AlertDialogTrigger>
+
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
@@ -151,9 +136,15 @@ function JobDetailContent() {
                       This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteJob}>
+                    <AlertDialogCancel>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteJob}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
                       Yes, delete
                     </AlertDialogAction>
                   </AlertDialogFooter>

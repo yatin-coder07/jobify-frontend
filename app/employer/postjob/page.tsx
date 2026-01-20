@@ -1,6 +1,7 @@
 "use client";
 
-import { redirect } from "next/navigation";
+
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -22,7 +23,7 @@ export default function PostJobPage() {
     description: "",
     location: "",
   });
-
+  const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -77,7 +78,7 @@ export default function PostJobPage() {
       return;
     }
 
-    redirect("/employer/dashboard");
+   router.push("/employer/jobs");
   }
 
   return (
