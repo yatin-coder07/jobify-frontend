@@ -114,7 +114,7 @@ export default function ApplicantsPage() {
               </div>
             </div>
           ) : (
-            /* ✅ APPLICATION LIST */
+           
             <div className="space-y-10">
               {applications.map((app) => (
                 <motion.div

@@ -1,20 +1,14 @@
 "use client";
 
-
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
 const jobSchema = z.object({
-  title: z
-    .string()
-    .min(3, "Job title must be at least 3 characters"),
+  title: z.string().min(3, "Job title must be at least 3 characters"),
   description: z
     .string()
     .min(30, "Description must be at least 30 characters"),
-  location: z
-    .string()
-    .min(2, "Location is required"),
+  location: z.string().min(2, "Location is required"),
 });
 
 export default function PostJobPage() {
@@ -23,9 +17,10 @@ export default function PostJobPage() {
     description: "",
     location: "",
   });
-  const router = useRouter();
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -36,9 +31,19 @@ export default function PostJobPage() {
     });
   }
 
+  function resetForm() {
+    setFormData({
+      title: "",
+      description: "",
+      location: "",
+    });
+    setErrors({});
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
+    setSuccess(false);
 
     const parsed = jobSchema.safeParse(formData);
 
@@ -60,92 +65,105 @@ export default function PostJobPage() {
 
     setSubmitting(true);
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/create/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/create/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Request failed");
       }
-    );
 
-    if (!res.ok) {
+      // ✅ success
+      setSuccess(true);
+      resetForm();
+    } catch (error) {
       setErrors({ general: "Failed to create job. Please try again." });
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-   router.push("/employer/jobs");
   }
 
   return (
     <div className="min-h-screen bg-gray-50 px-8 py-32">
       <div className="mx-auto grid max-w-7xl gap-20 md:grid-cols-2">
-        
+        {/* LEFT CONTENT */}
         <div className="space-y-8">
-          <h1 className="scroll-m-20 text-5xl font-extrabold tracking-tight text-gray-900">
+          <h1 className="text-5xl font-extrabold text-gray-900">
             Post a Job
           </h1>
           <p className="text-lg text-gray-500 max-w-xl">
-            Create a job listing that reaches the right candidates. Clear job
-            descriptions and locations help you attract better talent faster.
+            Create a job listing that reaches the right candidates faster.
           </p>
 
           <div className="space-y-6">
-            <div className="rounded-xl bg-white p-6 shadow-lg">
-              <h3 className="font-semibold text-gray-800 mb-2">
-                Write clear titles
-              </h3>
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="font-semibold">Write clear titles</h3>
               <p className="text-sm text-gray-500">
-                Use specific job titles to attract the right applicants.
+                Specific titles attract better candidates.
               </p>
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-lg">
-              <h3 className="font-semibold text-gray-800 mb-2">
-                Be descriptive
-              </h3>
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="font-semibold">Be descriptive</h3>
               <p className="text-sm text-gray-500">
-                Mention responsibilities, tools, and expectations clearly.
+                Mention responsibilities and expectations clearly.
               </p>
             </div>
 
-            <div className="rounded-xl bg-white p-6 shadow-lg">
-              <h3 className="font-semibold text-gray-800 mb-2">
-                Location matters
-              </h3>
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="font-semibold">Location matters</h3>
               <p className="text-sm text-gray-500">
-                Specify remote or on-site to avoid mismatches.
+                Specify remote or on-site clearly.
               </p>
             </div>
           </div>
         </div>
 
+        {/* FORM */}
         <div className="bg-white p-10 rounded-2xl shadow-lg">
           <h2 className="text-2xl font-semibold text-blue-700 mb-6">
             Job Details
           </h2>
 
+          {/* ❌ Error */}
           {errors.general && (
             <p className="mb-4 text-sm text-red-600">
               {errors.general}
             </p>
           )}
 
+          {/* ✅ Success Alert */}
+          {success && (
+            <div className="mb-6 rounded-lg border border-green-300 bg-green-50 p-4">
+              <h3 className="font-semibold text-green-800">
+                Job Posted Successfully 🎉
+              </h3>
+              <p className="text-sm text-green-700">
+                Your job listing is now live and visible to candidates.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium mb-1">
                 Job Title
               </label>
               <input
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
                 placeholder="Frontend Developer"
-                className="w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {errors.title && (
                 <p className="text-xs text-red-600 mt-1">
@@ -155,7 +173,7 @@ export default function PostJobPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium mb-1">
                 Job Description
               </label>
               <textarea
@@ -163,8 +181,8 @@ export default function PostJobPage() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={5}
-                placeholder="Describe the role, responsibilities, and requirements"
-                className="w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe responsibilities and requirements"
               />
               {errors.description && (
                 <p className="text-xs text-red-600 mt-1">
@@ -174,15 +192,15 @@ export default function PostJobPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium mb-1">
                 Location
               </label>
               <input
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
+                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
                 placeholder="Remote / Delhi / Bangalore"
-                className="w-full rounded-lg border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {errors.location && (
                 <p className="text-xs text-red-600 mt-1">
@@ -191,13 +209,23 @@ export default function PostJobPage() {
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-lg bg-blue-600 py-3 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
-            >
-              {submitting ? "Posting..." : "Post Job"}
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full rounded-lg bg-blue-600 py-3 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
+              >
+                {submitting ? "Posting..." : "Post Job"}
+              </button>
+
+              <button
+                type="button"
+                onClick={resetForm}
+                className="w-full rounded-lg border py-3 font-semibold hover:bg-gray-100"
+              >
+                Reset
+              </button>
+            </div>
           </form>
         </div>
       </div>
