@@ -180,9 +180,9 @@ It reflects practical engineering decisions rather than tutorial patterns.
 Yatin
 Aspiring Full-Stack Developer (Frontend-focused, Backend-capable)
 
-GitHub: your-github-link
 
-LinkedIn: your-linkedin-link
+
+LinkedIn: https://www.linkedin.com/in/yatin-sharma-12a34428b/
 
 ⭐ Final Note
 
