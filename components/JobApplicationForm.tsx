@@ -14,19 +14,11 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useState } from "react"
-import { redirect } from "next/navigation"
-import { z, ZodError } from "zod"
-
-const applicationSchema = z.object({
-  coverLetter: z
-    .string()
-    .min(30, "Cover letter must be at least 30 characters"),
-  resume: z
-    .instanceof(File, { message: "Resume is required" }),
-})
-
+import { useRouter } from "next/navigation"
 
 const JobApplicationForm = ({ jobId }: { jobId: string }) => {
+  const router = useRouter()
+
   const [formData, setFormData] = useState<{
     coverLetter: string
     resume: File | null
@@ -37,14 +29,12 @@ const JobApplicationForm = ({ jobId }: { jobId: string }) => {
 
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("access_token")
       : null
-
-  const headers: HeadersInit = {}
-  if (token) headers.Authorization = `Bearer ${token}`
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -62,41 +52,56 @@ const JobApplicationForm = ({ jobId }: { jobId: string }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    try {
-  applicationSchema.parse(formData)
-} catch (err) {
-  if (err instanceof ZodError) {
-    setError(err.errors[0].message)
-    return
-  }
-}
     setError(null)
+
+    // ✅ SIMPLE, SAFE VALIDATION
+    if (formData.coverLetter.trim().length < 30) {
+      setError("Cover letter must be at least 30 characters")
+      return
+    }
 
     if (!formData.resume) {
       setError("Resume is required")
       return
     }
 
+    if (!token) {
+      setError("You must be logged in to apply")
+      return
+    }
+
+    setSubmitting(true)
+
     const data = new FormData()
     data.append("coverLetter", formData.coverLetter)
     data.append("resume", formData.resume)
     data.append("job", jobId)
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/apply/${jobId}/`,
-      {
-        method: "POST",
-        headers,
-        body: data,
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/apply/${jobId}/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: data,
+        }
+      )
+
+      if (!res.ok) {
+        setError("Failed to submit application")
+        setSubmitting(false)
+        return
       }
-    )
 
-    if (!res.ok) {
-      setError("Failed to submit application")
-      return
+      // ✅ CLIENT-SAFE NAVIGATION
+      router.push("/jobs")
+    } catch (err) {
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setSubmitting(false)
     }
-
-    redirect("/jobs")
   }
 
   return (
@@ -181,7 +186,9 @@ const JobApplicationForm = ({ jobId }: { jobId: string }) => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Submit Application</Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit Application"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

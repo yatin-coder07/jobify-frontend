@@ -82,7 +82,7 @@ const EditJobForm = () => {
     }
 
     alert("Job updated successfully")
-    router.push(`/jobs/${jobId}`) // ✅ CORRECT CLIENT NAVIGATION
+    router.push(`/jobs/${jobId}`)
   }
 
   const handleInputChange = (
