@@ -87,21 +87,18 @@ console.log(profile.profile_image)
 
         
               <div className="flex flex-col gap-3">
-                {profile.resume && (
+                {profile.resume_url && (
                   <a
-                    href={profile.resume}
+                    href={profile.resume_url}
                     target="_blank"
-                    className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-bold"
+                    className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white py-3 rounded-xl font-bold"
                   >
                     <span className="material-symbols-outlined">download</span>
                     Download Resume
                   </a>
                 )}
 
-                <button className="w-full flex items-center justify-center gap-2 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold">
-                  <span className="material-symbols-outlined">mail</span>
-                  Send Message
-                </button>
+               
               </div>
             </div>
           </div>
@@ -217,8 +214,9 @@ console.log(profile.profile_image)
 
           
           <section className="bg-white rounded-2xl border p-8 shadow-sm">
-            <span className="material-symbols-outlined ">school</span>
+           
             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+               <span className="material-symbols-outlined text-blue-400">school</span>
               
               Education
             </h2>
