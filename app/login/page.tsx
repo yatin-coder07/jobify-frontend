@@ -43,9 +43,9 @@ const Page = () => {
     localStorage.setItem("role", data.role)
 
     if (data.role === "employer") {
-      window.location.href = "/employer/dashboard"
+      window.location.href = "/profile/employer/create"
     } else {
-      window.location.href = "/"
+      window.location.href = "/profile/candidate/create"
     }
   }
 

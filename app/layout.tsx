@@ -28,6 +28,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <link
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600;700"
+  rel="stylesheet"
+/>
+
         <UserProvider>
             {children}
         </UserProvider>
