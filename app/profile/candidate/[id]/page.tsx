@@ -2,72 +2,48 @@
 
 import Navbar from "@/components/Navbar"
 import SkelitonLoading from "@/components/SkelitonLoading"
-import UpdateProfileForm from "@/components/UpdateProfileForm"
+import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export default function CandidateProfilePage() {
   const [profile, setProfile] = useState<any>(null)
+  const {id} = useParams();
+  const profileId= id as string
 
   
 
   useEffect(() => {
+    if(!profileId){
+        return
+    }
   async function fetchData() {
     const token = localStorage.getItem("access_token")
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/profile/`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/profile/${profileId}/`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     )
+    console.log("STATUS:", res.status)
+
 
     const data = await res.json()
-    setProfile(data)
-    console.log(data)
+     console.log(data)
+     setProfile(data)
+    
   }
 
   fetchData()
-}, [])
-
-const updatedProfile =async()=>{
-  const token = localStorage.getItem("access_token")
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/profile/`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        full_name: profile.full_name,
-       bio: profile.bio,
-       experience: profile.experience,
-       skills: profile.skills,
-       educations: profile.educations,
-      
-       
-        portfolio_link: profile.portfolio_link,
-        linkedin_link: profile.linkedin_link,
-        resume_url: profile.resume_url,
-      }),
-    }
-  )
-  const data = await res.json()
-  setProfile(data)
-}
+}, [profileId])
 
 
   if (!profile) return <SkelitonLoading />
 
-const imageUrl = profile.profile_image_url
-  ? encodeURI(profile.profile_image_url)
-  : "/user-avatar.png"
+ 
 
-
-console.log(profile.profile_image)
 
   return (
     < >
@@ -90,9 +66,9 @@ console.log(profile.profile_image)
                 <div
                   className="size-32 rounded-2xl border-4 border-white bg-cover bg-center shadow-xl"
                   style={{
-                    backgroundImage: `url(${
-                     imageUrl
-                    })`,
+                    backgroundImage: `url("${
+                      profile.profile_image_url ||"/user-avatar.png"
+                    }")`,
                   }}
                 />
               </div>
@@ -166,11 +142,7 @@ console.log(profile.profile_image)
     </a>
 
   </div>
- 
 </div>
- <div>
-    <UpdateProfileForm/>
-  </div>
 
 
         </aside>
@@ -197,7 +169,7 @@ console.log(profile.profile_image)
               Work Experience
             </h2>
 
-            {profile.experiences.length === 0 ? (
+            {profile.experiences?.length === 0 ? (
               <p className="text-slate-500">
                 No professional experience added yet. Actively seeking opportunities 🚀
               </p>
@@ -253,7 +225,7 @@ console.log(profile.profile_image)
               Education
             </h2>
 
-            {profile.educations.map(edu => (
+            {profile.educations?.map(edu => (
               <div key={edu.id} className="flex items-start gap-5">
               
                 <div className="flex gap-2">

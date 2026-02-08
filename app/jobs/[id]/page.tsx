@@ -30,6 +30,11 @@ type Job = {
   created_at: string
   company_name?: string
   company_logo?: string | null
+  salary:string
+  job_type:string
+  experience_level:string
+  work_mode:string
+
 }
 
 function JobDetailContent() {
@@ -136,7 +141,7 @@ function JobDetailContent() {
         <span className="material-symbols-outlined">payments</span>
       </div>
       <div>
-        <h2 className="text-sm font-bold">$120k - $160k</h2>
+        <h2 className="text-sm font-bold">{job.salary}</h2>
         <p className="text-xs text-slate-500">Salary Range</p>
       </div>
     </div>
@@ -147,7 +152,7 @@ function JobDetailContent() {
         <span className="material-symbols-outlined">home_work</span>
       </div>
       <div>
-        <h2 className="text-sm font-bold">Remote</h2>
+        <h2 className="text-sm font-bold">{job.work_mode}</h2>
         <p className="text-xs text-slate-500">Work Mode</p>
       </div>
     </div>
@@ -158,7 +163,7 @@ function JobDetailContent() {
         <span className="material-symbols-outlined">trending_up</span>
       </div>
       <div>
-        <h2 className="text-sm font-bold">Senior Level</h2>
+        <h2 className="text-sm font-bold">{job.experience_level}</h2>
         <p className="text-xs text-slate-500">Experience</p>
       </div>
     </div>
@@ -189,13 +194,17 @@ function JobDetailContent() {
 
         {/* COMPANY */}
         <section className="mt-8 px-4">
-          <div className="rounded-2xl border bg-white p-6">
-            <h3 className="font-bold mb-2">
+          <div className="rounded-2xl border bg-white p-6 flex gap-31">
+             <img
+              src={job.company_logo}
+              alt={job.company_name || "Company logo"}
+              className="ml-4 size-16 rounded-lg object-contain"
+            />
+            <h3 className="font-bold mb-2 text-blue-400">
               About {job.company_name ?? "Company"}
             </h3>
-            <p className="text-sm text-slate-600">
-              Company profile details go here.
-            </p>
+           
+            
           </div>
         </section>
       </main>

@@ -42,11 +42,31 @@ const Page = () => {
     localStorage.setItem("access_token", data.access)
     localStorage.setItem("role", data.role)
 
-    if (data.role === "employer") {
+    const profileCheckUrl =
+      data.role === "employer"
+        ? "/api/auth/employer/profile/check/"
+        : "/api/auth/candidate/profile/check/"
+
+    const checkRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}${profileCheckUrl}`,
+      {
+        headers: {
+          Authorization: `Bearer ${data.access}`,
+        },
+      }
+    )
+
+    if (checkRes.status === 404 && data.role === "candidate") {
+      window.location.href = "/"
+    }else if (checkRes.status === 404 && data.role === "employer") {
+      window.location.href = "/employer/dashboard"
+    }else if(checkRes.status === 200 && data.role === "employer"){
       window.location.href = "/profile/employer/create"
-    } else {
+    }else{
       window.location.href = "/profile/candidate/create"
     }
+
+  
   }
 
   return (

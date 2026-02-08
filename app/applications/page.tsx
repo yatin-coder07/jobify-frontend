@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -16,28 +15,30 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import SkelitonLoading from "@/components/SkelitonLoading"
-import { motion } from "framer-motion"
 
 type Application = {
   id: number
   job_title: string
   job_location: string
-  cover_letter: string
   resume?: string
   applied_at: string
+ 
+  status: "new" | "accepted" | "rejected"
 }
+
+type StatusFilter = "all" | "new" | "accepted" | "rejected"
+
 
 export default function CandidateApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
-  const [deleted, setDeleted] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [applicationStatus, setApplicationStatus] =
+    useState<StatusFilter>("all")
 
   useEffect(() => {
     const fetchApplications = async () => {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("access_token")
-          : null
+      const token = localStorage.getItem("access_token")
 
       try {
         const res = await fetch(
@@ -52,9 +53,9 @@ export default function CandidateApplicationsPage() {
         if (!res.ok) return
 
         const data = await res.json()
-        setApplications(data)
-      } catch (error) {
-        console.error(error)
+        setApplications(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error(err)
       } finally {
         setLoading(false)
       }
@@ -64,10 +65,8 @@ export default function CandidateApplicationsPage() {
   }, [])
 
   const deleteApplication = async (applicationId: number) => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null
+    const token = localStorage.getItem("access_token")
+    setDeletingId(applicationId)
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/delete/${applicationId}/`,
@@ -79,164 +78,167 @@ export default function CandidateApplicationsPage() {
       }
     )
 
-    if (!res.ok) return
+    if (res.ok) {
+      setApplications((prev) =>
+        prev.filter((app) => app.id !== applicationId)
+      )
+    }
 
-    setApplications((prev) =>
-      prev.filter((app) => app.id !== applicationId)
-    )
-    setDeleted(true)
+    setDeletingId(null)
   }
 
-  if (loading) {
-    return <SkelitonLoading />
-  }
+  if (loading) return <SkelitonLoading />
+
+  const filteredApplications = applications.filter((app) => {
+    if (applicationStatus === "all") return true
+    return app.status === applicationStatus
+  })
 
   if (applications.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-center px-6">
-        <Image
-          src="/logo.png"
-          alt="Jobify"
-          width={80}
-          height={80}
-          className="mb-6 opacity-80"
-        />
-        <h2 className="text-2xl font-semibold text-gray-700">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background-light px-6 text-center">
+        <Image src="/logo.png" alt="Jobify" width={80} height={80} />
+        <h2 className="mt-6 text-2xl font-semibold text-slate-700">
           No applications yet
         </h2>
-        <p className="mt-2 max-w-md text-gray-500">
-          You haven’t applied to any jobs yet. Start exploring opportunities and
-          your applications will appear here.
+        <p className="mt-2 text-slate-500 max-w-md">
+          Start applying to jobs and track them here.
         </p>
       </div>
     )
   }
-return (
-  <div className="min-h-screen bg-gray-50">
-    
-    {/* HERO HEADER */}
-    <section className="pt-32 pb-24 text-center px-6">
-      <h1 className="scroll-m-20 text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900">
-        My Applications
-      </h1>
-      <p className="mt-6 text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto">
-        Track every role you’ve applied to, review your details, and manage
-        your job search from one place.
-      </p>
-    </section>
 
-    {/* CONTENT */}
-    <section className="pb-32 px-6">
-      <div className="mx-auto max-w-4xl">
-        
-        {applications.length === 0 ? (
-          /* EMPTY STATE */
-          <div className="mt-20 rounded-3xl bg-white shadow-lg p-16 text-center">
-            <Image
-              src="/logo.png"
-              alt="Jobify"
-              width={90}
-              height={90}
-              className="mx-auto mb-6 opacity-80"
-            />
-            <h2 className="text-2xl font-semibold text-gray-800">
-              No applications yet
-            </h2>
-            <p className="mt-3 text-gray-500 max-w-md mx-auto">
-              When you apply to jobs, they’ll appear here so you can track
-              progress and revisit details anytime.
-            </p>
-          </div>
-        ) : (
-          /* APPLICATION LIST */
-          <div className="space-y-10">
-            {applications.map((app) => (
-              <motion.div
-                key={app.id}
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              >
-                <Card className="shadow-lg rounded-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-2xl font-semibold">
-                      {app.job_title}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {app.job_location}
-                    </p>
-                  </CardHeader>
+  return (
+    <div className="min-h-screen bg-background-light">
+      {/* TOP BAR */}
+      <div className="sticky top-0 z-20 bg-background-light/80 backdrop-blur border-b">
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="material-symbols-outlined cursor-pointer">
+            arrow_back_ios
+          </span>
+          <h2 className="font-bold text-lg">My Applications</h2>
+          <span className="material-symbols-outlined cursor-pointer">
+            notifications
+          </span>
+        </div>
 
-                  <CardContent className="space-y-6">
-                    {app.cover_letter && (
-                      <div>
-                        <p className="font-semibold mb-2">
-                          Your Cover Letter
-                        </p>
-                        <p className="text-sm text-gray-600 whitespace-pre-line max-h-40 overflow-y-auto rounded-xl border bg-gray-50 p-4">
-                          {app.cover_letter}
-                        </p>
-                      </div>
-                    )}
-
-                    <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Applied on:</span>{" "}
-                      {new Date(app.applied_at).toLocaleDateString()}
-                    </p>
-
-                    <div className="flex flex-wrap gap-4">
-                      {app.resume && (
-                        <a
-                          href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${app.resume}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button variant="outline">
-                            View Resume
-                          </Button>
-                        </a>
-                      )}
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive">
-                            Withdraw Application
-                          </Button>
-                        </AlertDialogTrigger>
-
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Withdraw this application?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently remove your application
-                              from the employer’s view.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteApplication(app.id)}
-                            >
-                              Yes, withdraw
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-6 px-4 border-b overflow-x-auto hide-scrollbar">
+          {[
+            ["all", "All"],
+            ["reviewed", "In Review"],
+            ["accepted", "Accepted"],
+            ["rejected", "Rejected"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() =>
+                setApplicationStatus(value as StatusFilter)
+              }
+              className={`pb-3 text-sm font-bold ${
+                applicationStatus === value
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-slate-400"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
-    </section>
-  </div>
-)
 
-  
+      {/* APPLICATION LIST */}
+      <div className="p-4 flex flex-col gap-3">
+        {filteredApplications.map((app) => (
+          <div
+            key={app.id}
+            className="rounded-xl bg-white p-4 shadow-sm border"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                    app.status === "accepted"
+                      ? "bg-green-100 text-green-600"
+                      : app.status === "rejected"
+                      ? "bg-red-100 text-red-600"
+                      : "bg-blue-100 text-blue-600"
+                  }`}
+                >
+                  {app.status || "In Review"}
+                </span>
+
+                <p className="mt-2 text-lg font-bold text-slate-900">
+                  {app.job_title}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  {app.job_location} • Applied{" "}
+                  {app.applied_at.slice(0, 10)}
+                </p>
+              </div>
+
+              <div className="size-14 rounded-lg bg-slate-100 shrink-0" />
+            </div>
+
+            {/* ACTIONS */}
+            <div className="mt-4 pt-3 border-t flex gap-2">
+              {app.resume && (
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_BASE_URL}${app.resume}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                >
+                  <Button className="w-full bg-primary text-white">
+                    View Resume
+                  </Button>
+                </a>
+              )}
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="flex-1"
+                    disabled={deletingId === app.id}
+                  >
+                    {deletingId === app.id
+                      ? "Withdrawing..."
+                      : "Withdraw"}
+                  </Button>
+                </AlertDialogTrigger>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Withdraw this application?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently remove your application
+                      from the employer’s view.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() =>
+                        deleteApplication(app.id)
+                      }
+                    >
+                      Yes, withdraw
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="h-24" />
+    </div>
+  )
 }

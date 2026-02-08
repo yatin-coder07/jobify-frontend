@@ -1,69 +1,49 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { z } from "zod";
+import { useState } from "react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import Navbar from "@/components/Navbar"
 
-const jobSchema = z.object({
-  title: z.string().min(3, "Job title must be at least 3 characters"),
-  description: z
-    .string()
-    .min(30, "Description must be at least 30 characters"),
-  location: z.string().min(2, "Location is required"),
-});
 
 export default function PostJobPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
-  });
+    experience_level: "entry",
+    work_mode: "remote",
+    job_type: "full-time",
+    salary: "",
+  })
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  }
-
-  function resetForm() {
-    setFormData({
-      title: "",
-      description: "",
-      location: "",
-    });
-    setErrors({});
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrors({});
-    setSuccess(false);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
 
-    const parsed = jobSchema.safeParse(formData);
-
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
-      parsed.error.errors.forEach((err) => {
-        const field = err.path[0] as string;
-        fieldErrors[field] = err.message;
-      });
-      setErrors(fieldErrors);
-      return;
-    }
-
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token")
     if (!token) {
-      setErrors({ general: "You must be logged in to post a job." });
-      return;
+      setError("You must be logged in to post a job.")
+      setLoading(false)
+      return
     }
-
-    setSubmitting(true);
 
     try {
       const res = await fetch(
@@ -76,159 +56,244 @@ export default function PostJobPage() {
           },
           body: JSON.stringify(formData),
         }
-      );
+      )
 
-      if (!res.ok) {
-        throw new Error("Request failed");
-      }
+      if (!res.ok) throw new Error("Failed")
 
-      // ✅ success
-      setSuccess(true);
-      resetForm();
-    } catch (error) {
-      setErrors({ general: "Failed to create job. Please try again." });
+      setSuccess(true)
+      setFormData({
+        title: "",
+        description: "",
+        location: "",
+        experience_level: "entry",
+        work_mode: "remote",
+        job_type: "full-time",
+        salary: "",
+      })
+    } catch {
+      setError("Failed to create job. Try again.")
     } finally {
-      setSubmitting(false);
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-8 py-32">
-      <div className="mx-auto grid max-w-7xl gap-20 md:grid-cols-2">
-        {/* LEFT CONTENT */}
-        <div className="space-y-8">
-          <h1 className="text-5xl font-extrabold text-gray-900">
-            Post a Job
-          </h1>
-          <p className="text-lg text-gray-500 max-w-xl">
-            Create a job listing that reaches the right candidates faster.
-          </p>
+    <>
+    <div className="h-full w-full bg-blue-100">
+    <Navbar/>
+    <div className="min-h-screen bg-slate-50 px-6 py-24">
+      <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row gap-8 ">
 
-          <div className="space-y-6">
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="font-semibold">Write clear titles</h3>
-              <p className="text-sm text-gray-500">
-                Specific titles attract better candidates.
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="font-semibold">Be descriptive</h3>
-              <p className="text-sm text-gray-500">
-                Mention responsibilities and expectations clearly.
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="font-semibold">Location matters</h3>
-              <p className="text-sm text-gray-500">
-                Specify remote or on-site clearly.
-              </p>
-            </div>
+        {/* MAIN FORM */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 bg-white rounded-2xl border shadow-sm p-8 space-y-8"
+        >
+          <div>
+            <h2 className="text-2xl font-bold">Basic Job Information</h2>
+            <p className="text-slate-500 mt-1">
+              Provide the essential details about the position.
+            </p>
           </div>
-        </div>
 
-        {/* FORM */}
-        <div className="bg-white p-10 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold text-blue-700 mb-6">
-            Job Details
-          </h2>
+          {error && (
+            <p className="text-sm text-red-600 font-medium">{error}</p>
+          )}
 
-          {/* ❌ Error */}
-          {errors.general && (
-            <p className="mb-4 text-sm text-red-600">
-              {errors.general}
+          {success && (
+            <p className="text-sm text-green-600 font-medium">
+              Job posted successfully 🎉
             </p>
           )}
 
-          {/* ✅ Success Alert */}
-          {success && (
-            <div className="mb-6 rounded-lg border border-green-300 bg-green-50 p-4">
-              <h3 className="font-semibold text-green-800">
-                Job Posted Successfully 🎉
-              </h3>
-              <p className="text-sm text-green-700">
-                Your job listing is now live and visible to candidates.
-              </p>
-            </div>
-          )}
+          {/* TITLE */}
+          <div>
+            <label className="text-sm font-semibold">Job Title</label>
+            <input
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="e.g. Senior Backend Engineer"
+              className="w-full mt-1 px-4 py-3 rounded-xl bg-slate-50 border focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Job Title
-              </label>
-              <input
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-                placeholder="Frontend Developer"
-              />
-              {errors.title && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.title}
-                </p>
-              )}
-            </div>
+          {/* EXPERIENCE + TYPE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div>
+  <label className="text-sm font-semibold">Experience Level</label>
+
+  <Select
+    value={formData.experience_level}
+    onValueChange={(value) =>
+      setFormData({ ...formData, experience_level: value })
+    }
+  >
+    <SelectTrigger className="mt-1 w-full rounded-xl bg-slate-50">
+      <SelectValue placeholder="Select experience level" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="entry">Intern</SelectItem>
+      <SelectItem value="mid">Entry Level</SelectItem>
+      <SelectItem value="senior">Senior Level</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+
+           <div>
+  <label className="text-sm font-semibold">Job Type</label>
+
+  <Select
+    value={formData.job_type}
+    onValueChange={(value) =>
+      setFormData({ ...formData, job_type: value })
+    }
+  >
+    <SelectTrigger className="mt-1 w-full rounded-xl bg-slate-50">
+      <SelectValue placeholder="Select job type" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="full-time">Full-time</SelectItem>
+      <SelectItem value="part-time">Part-time</SelectItem>
+      <SelectItem value="contract">Contract</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+          </div>
+
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div>
+  <label className="text-sm font-semibold">Work Mode</label>
+
+  <Select
+    value={formData.work_mode}
+    onValueChange={(value) =>
+      setFormData({ ...formData, work_mode: value })
+    }
+  >
+    <SelectTrigger className="mt-1 w-full rounded-xl bg-slate-50">
+      <SelectValue placeholder="Select work mode" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="remote">Remote</SelectItem>
+      <SelectItem value="onsite">On-site</SelectItem>
+      <SelectItem value="hybrid">Hybrid</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Job Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={5}
-                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-                placeholder="Describe responsibilities and requirements"
-              />
-              {errors.description && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Location
-              </label>
+              <label className="text-sm font-semibold">Location</label>
               <input
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-                placeholder="Remote / Delhi / Bangalore"
+                placeholder="Delhi / Remote / Worldwide"
+                className="w-full mt-1 px-4 py-3 rounded-xl bg-slate-50 border"
+                required
               />
-              {errors.location && (
-                <p className="text-xs text-red-600 mt-1">
-                  {errors.location}
-                </p>
-              )}
+            </div>
+          </div>
+
+          
+          <div>
+            <label className="text-sm font-semibold">Salary Range</label>
+            <input
+              name="salary"
+              value={formData.salary}
+              onChange={handleChange}
+              placeholder="₹8L – ₹15L / $80k – $120k"
+              className="w-full mt-1 px-4 py-3 rounded-xl bg-slate-50 border"
+            />
+          </div>
+
+         
+          <div>
+            <label className="text-sm font-semibold">Job Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={10}
+              placeholder="Describe responsibilities, requirements, and expectations..."
+              className="w-full mt-1 px-4 py-3 rounded-xl bg-white border resize-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+        
+          <div className="flex justify-between pt-6 border-t">
+            <button
+              type="button"
+              className="px-6 py-3 rounded-xl border font-semibold"
+              onClick={() =>
+                setFormData({
+                  title: "",
+                  description: "",
+                  location: "",
+                  experience_level: "entry",
+                  work_mode: "remote",
+                  job_type: "full-time",
+                  salary: "",
+                })
+              }
+            >
+             Reset Form
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`px-10 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 disabled:opacity-60 ${loading ? "animate-spin" : ""}`}
+            >
+              {loading ? "Posting..." : "Post Job"}
+            </button>
+          </div>
+        </form>
+
+        
+        <aside className="w-full lg:w-[400px] space-y-6">
+          <div className="bg-white rounded-2xl border shadow-sm p-6">
+            <span className="text-xs font-bold text-green-600">LIVE PREVIEW</span>
+
+            <h3 className="text-xl font-bold mt-4">
+              {formData.title || "Job Title"}
+            </h3>
+
+            <p className="text-sm text-blue-600 mt-1">
+              Jobify • {formData.location || "Location"}
+            </p>
+
+            <div className="mt-4 space-y-2 text-sm text-slate-600">
+              <p>📍 {formData.work_mode}</p>
+              <p>🕒 {formData.job_type}</p>
+              <p>💼 {formData.experience_level}</p>
+              {formData.salary && <p>💰 {formData.salary}</p>}
             </div>
 
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-lg bg-blue-600 py-3 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
-              >
-                {submitting ? "Posting..." : "Post Job"}
-              </button>
+            <button
+              disabled
+              className="mt-6 w-full py-3 rounded-xl bg-slate-200 text-slate-400 font-bold"
+            >
+              Apply Now
+            </button>
 
-              <button
-                type="button"
-                onClick={resetForm}
-                className="w-full rounded-lg border py-3 font-semibold hover:bg-gray-100"
-              >
-                Reset
-              </button>
-            </div>
-          </form>
-        </div>
+            <p className="text-[11px] text-center text-slate-400 mt-4 italic">
+              Candidates will see this card in search results
+            </p>
+          </div>
+        </aside>
       </div>
     </div>
-  );
+    </div>
+    </>
+  )
 }

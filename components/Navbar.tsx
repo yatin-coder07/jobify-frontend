@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 export default function Navbar() {
   const { user } = useUser();
   const pathname = usePathname();
-  const isEmployerDashboard = pathname.startsWith("/employer");
+ 
   const [profileImage ,setProfileImage]=useState()
 
   function LogOut() {
@@ -38,7 +38,7 @@ useEffect(() => {
     if (!res.ok) return
 
     const data = await res.json()
-    setProfileImage(data.profile_image)
+    setProfileImage(data.profile_image_url)
   }
 
   fetchProfile()

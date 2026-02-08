@@ -73,7 +73,7 @@ const JobApplicationForm = ({ jobId }: { jobId: string }) => {
     setSubmitting(true)
 
     const data = new FormData()
-    data.append("coverLetter", formData.coverLetter)
+    data.append("cover_letter", formData.coverLetter)
     data.append("resume", formData.resume)
     data.append("job", jobId)
 
