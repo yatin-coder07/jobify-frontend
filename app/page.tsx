@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic"
+
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import Image from "next/image";
