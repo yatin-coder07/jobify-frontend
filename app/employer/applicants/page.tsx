@@ -32,7 +32,7 @@ type Application = {
   status: "new" | "accepted" | "rejected"
 }
 
-export default function ApplicantsPage() {
+ function ApplicantsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const searchFromUrl = searchParams.get("search") || ""
@@ -274,5 +274,16 @@ export default function ApplicantsPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+
+import { Suspense } from "react"
+
+export default function PageWrapper() {
+  return (
+    <Suspense fallback={<SkelitonLoading />}>
+      <ApplicantsPage />
+    </Suspense>
   )
 }
