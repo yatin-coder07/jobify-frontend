@@ -4,16 +4,45 @@ import { useUser } from "@/app/context/UserContext";
 import { easeInOut, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
 
 export default function Navbar() {
   const { user } = useUser();
   const pathname = usePathname();
-  const isEmployerDashboard = pathname.startsWith("/employer");
+ 
+  const [profileImage ,setProfileImage]=useState()
 
   function LogOut() {
     localStorage.removeItem("access_token");
     window.location.href = "/login";
   }
+
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("access_token")
+
+    if (!token) return
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/profile/`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    if (!res.ok) return
+
+    const data = await res.json()
+    setProfileImage(data.profile_image_url)
+  }
+
+  fetchProfile()
+}, [])
 
   return (
     <nav className="fixed top-6 left-1/2 z-50 -translate-x-1/2">
@@ -57,7 +86,7 @@ export default function Navbar() {
               </>
             )}
 
-            {/* CANDIDATE */}
+          
             {user?.role === "candidate" && (
               <>
                 <Link href="/applications">
@@ -87,10 +116,29 @@ export default function Navbar() {
                     Logout
                   </motion.button>
                 </Link>
+                 {profileImage ? (
+                   <Link href={"/profile/candidate"}>
+                     <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                    />
+                   </Link>
+                  ) : (
+                    <Link href={"/profile/candidate"}>
+                       <img
+                      src="/user-avatar.png"
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                    />
+                    </Link>
+                   
+
+                  )}
               </>
             )}
 
-            {/* EMPLOYER */}
+            
             {user?.role === "employer" && (
               <>
                 <Link href="/employer/applicants">
@@ -121,6 +169,7 @@ export default function Navbar() {
                     Logout
                   </motion.button>
                 </Link>
+               
               </>
             )}
 

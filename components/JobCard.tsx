@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { MapPin, Calendar } from "lucide-react"
+import { MapPin, Calendar, Bookmark } from "lucide-react"
 
 type Job = {
   id: number
@@ -18,46 +18,55 @@ type Props = {
 
 const JobCard = ({ job }: Props) => {
   return (
-    <Link href={`/jobs/${job.id}`} className="block h-full">
+    <Link href={`/jobs/${job.id}`} className="block">
       <motion.div
-        whileHover={{ y: -8 }}
-        transition={{ type: "spring", stiffness: 200, damping: 18 }}
-        className="
-          group
-          h-full
-          rounded-2xl
-          border border-gray-200
-          bg-white
-          p-6
-          shadow-md
-          hover:shadow-xl
-          cursor-pointer
-        "
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+        className="group relative rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/5"
       >
-        <h2 className="line-clamp-2 text-xl font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
-          {job.title}
-        </h2>
-
-        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-          <MapPin size={16} />
-          <span>{job.location}</span>
-        </div>
-
-        <p className="mt-4 line-clamp-3 text-sm text-gray-600">
-          {job.description}
-        </p>
-
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <Calendar size={14} />
-            <span>
-              {new Date(job.created_at).toLocaleDateString()}
+        <div className="flex gap-6">
+          <div className="size-20 shrink-0 rounded-2xl border border-slate-100 bg-slate-50 flex items-center justify-center p-2">
+            <span className="text-sm font-bold text-slate-400">
+              LOGO
             </span>
           </div>
 
-          <span className="text-sm font-semibold text-blue-600 transition-all group-hover:translate-x-1">
-            View Details →
-          </span>
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <div>
+                <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                  {job.title}
+                </h4>
+                <p className="mt-1 text-sm font-semibold text-slate-600">
+                  Company Name
+                </p>
+              </div>
+
+              <button className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+                <Bookmark size={18} />
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <span className="flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
+                <MapPin size={14} />
+                {job.location}
+              </span>
+
+              <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-600">
+                Full-time
+              </span>
+            </div>
+
+            <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-slate-600">
+              {job.description}
+            </p>
+
+            <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400">
+              <Calendar size={14} />
+              {new Date(job.created_at).toLocaleDateString()}
+            </div>
+          </div>
         </div>
       </motion.div>
     </Link>

@@ -12,6 +12,7 @@ const Page = () => {
   })
 
   const [error, setError] = useState("")
+  const[loading, setLoading] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -24,6 +25,7 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login/`,
@@ -44,11 +46,31 @@ const Page = () => {
     localStorage.setItem("access_token", data.access)
     localStorage.setItem("role", data.role)
 
-    if (data.role === "employer") {
-      window.location.href = "/employer/dashboard"
-    } else {
+    const profileCheckUrl =
+      data.role === "employer"
+        ? "/api/auth/employer/profile/check/"
+        : "/api/auth/candidate/profile/check/"
+
+    const checkRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}${profileCheckUrl}`,
+      {
+        headers: {
+          Authorization: `Bearer ${data.access}`,
+        },
+      }
+    )
+
+    if (checkRes.status === 404 && data.role === "candidate") {
       window.location.href = "/"
+    }else if (checkRes.status === 404 && data.role === "employer") {
+      window.location.href = "/employer/dashboard"
+    }else if(checkRes.status === 200 && data.role === "employer"){
+      window.location.href = "/profile/employer/create"
+    }else{
+      window.location.href = "/profile/candidate/create"
     }
+   setLoading(false)
+  
   }
 
   return (
@@ -89,9 +111,10 @@ const Page = () => {
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className={`w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 ${loading ? "cursor-not-allowed opacity-50 " : ""}`}
+          disabled={loading}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <div className="pt-4 border-t text-center space-y-3">

@@ -1,295 +1,363 @@
 "use client";
 
-export const dynamic = "force-dynamic"
-
-import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@/app/context/UserContext";
-import { Briefcase, ClipboardList, Rocket, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Briefcase,
+  Rocket,
+  CheckCircle,
+  Globe,
+  ShieldCheck,
+  Sparkles,
+  Code,
+  Palette,
+  Landmark,
+  Megaphone,
+  HeartPulse,
+  BarChart3,
+  Headset,
+  Grid,
+  UserPlus,
+  SearchCheck,
+  PartyPopper,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 32 },
+  hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0 },
 };
+const container = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12 },
+  },
+}
+const item = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+}
 
-const chartData = [
-  { name: "Mon", applications: 2 },
-  { name: "Tue", applications: 5 },
-  { name: "Wed", applications: 3 },
-  { name: "Thu", applications: 8 },
-  { name: "Fri", applications: 6 },
-];
-
-export default function CandidateDashboard() {
-  const user = useUser();
-
+export default function LandingPage() {
   return (
-    <>
-      <Navbar />
+    <main className="bg-slate-50 text-slate-900">
+     <Navbar/>
 
+      {/* HERO */}
       <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.7 }}
-        className="pt-40 pb-52 px-8"
+  initial="hidden"
+  animate="visible"
+  variants={container}
+  className="mx-auto max-w-7xl px-6 py-28"
+>
+  <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-blue-600 to-blue-800 px-10 py-28 text-center text-white shadow-2xl">
+    
+    {/* subtle background glow */}
+    <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+    <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-black/20 blur-3xl" />
+
+    <motion.div
+      variants={container}
+      className="relative mx-auto max-w-4xl space-y-10"
+    >
+      <motion.div
+        variants={item}
+        className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
       >
-        <div className="mx-auto flex max-w-7xl items-center gap-32">
-          <div>
-            <h1 className="scroll-m-20 text-6xl font-extrabold tracking-tight text-blue-600 sm:text-8xl lg:text-9xl">
-              JOBIFY
-            </h1>
-            <p className="mt-10 max-w-xl text-lg text-gray-500">
-              A purpose-built platform designed to help you navigate your job
-              search with clarity, structure, and confidence.
-            </p>
-          
-          </div>
+        <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+        50,000+ Active Roles
+      </motion.div>
 
-          <div className="hidden lg:block">
-            <Image
-              src="/candidateDashboard.png"
-              alt="Jobify candidate"
-              width={520}
-              height={520}
-            />
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-44 px-8"
+      <motion.h1
+        variants={item}
+        className="text-5xl md:text-7xl font-black leading-tight"
       >
-        <div className="mx-auto max-w-4xl text-center space-y-6">
-          <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-gray-700">
-            Welcome back, <span className="text-blue-600">{user?.username}</span>
-          </h3>
-          <p className="text-gray-500">
-            Your dashboard gives you a clear overview of your progress and next
-            steps.
-          </p>
-          <p className="text-gray-500">
-            Stay consistent, apply thoughtfully, and build momentum with every
-            action.
-          </p>
+        Where the world’s best{" "}
+        <span className="text-blue-200">talent</span> finds its future
+      </motion.h1>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-8 rounded-full bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-lg"
+      <motion.p
+        variants={item}
+        className="mx-auto max-w-2xl text-xl text-white/80"
+      >
+        Connecting visionary companies with world-class professionals.
+        Turning skills into careers.
+      </motion.p>
+
+      <motion.div
+        variants={item}
+        className="flex flex-col sm:flex-row justify-center gap-5 pt-4"
+      >
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+          <Link
+            href="/jobs"
+            className="inline-block rounded-full bg-white px-10 py-5 text-lg font-bold text-blue-600 shadow-xl"
           >
-            <Link href="/jobs">Explore Jobs</Link>
-          </motion.button>
+            Get Started
+          </Link>
+        </motion.div>
+
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+          <Link
+            href="/jobs"
+            className="inline-block rounded-full border border-white/30 bg-white/10 px-10 py-5 text-lg font-bold"
+          >
+            Find a job
+          </Link>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  </div>
+</motion.section>
+     
+      {/* WHY JOBIFY */}
+      <section className="mx-auto max-w-7xl px-6 py-24">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-4xl font-black mb-4">Why choosing <span className="text-blue-500">Jobify?</span></h2>
+          <p className="text-slate-500 font-medium">
+            A hiring experience built to be human, efficient, and transparent.
+          </p>
         </div>
-      </motion.section>
 
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-48 px-8"
-      >
-        <div className="mx-auto max-w-7xl space-y-10">
-        
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {["Applied", "Under Review", "Shortlisted"].map((label) => (
-              <div
-                key={label}
-                className="rounded-2xl bg-white p-8 shadow-lg"
-              >
-                <CheckCircle className="mb-4 h-6 w-6 text-blue-600" />
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-gray-700">
-                  {label}
-                </h4>
-                <p className="mt-3 text-gray-500">
-                  Jobs currently marked as {label.toLowerCase()} by employers.
-                </p>
+        <div className="grid gap-12 md:grid-cols-3">
+          {[{
+            title: "Verified Employers",
+            desc: "Every company is vetted to ensure legitimate and safe opportunities.",
+            icon: <ShieldCheck className="h-8 w-8 text-blue-600" />,
+          },{
+            title: "Smart Matching",
+            desc: "AI-powered role suggestions based on skills and preferences.",
+            icon: <Sparkles className="h-8 w-8 text-green-600" />,
+          },{
+            title: "Global Reach",
+            desc: "Remote and relocation roles across 120+ countries.",
+            icon: <Globe className="h-8 w-8 text-purple-600" />,
+          }].map((f) => (
+            <div key={f.title} className="text-center p-6">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
+                {f.icon}
               </div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-48 px-8"
-      >
-        <div className="mx-auto max-w-4xl text-center space-y-6">
-          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight text-balance">
-            Designed to Support Long-Term Growth
-          </h1>
-          <p className="text-gray-500">
-            Jobify isn’t just about applying to jobs — it’s about helping you
-            build a sustainable and focused career path.
-          </p>
-          <p className="text-gray-500">
-            Make informed decisions, stay organized, and move forward with
-            confidence.
-          </p>
-        </div>
-      </motion.section>
-
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-48 px-8"
-      >
-        <div className="mx-auto flex max-w-7xl flex-col gap-16 md:flex-row">
-         <div>
-          <Image
-              src="/candidateHero.png"
-              alt="Application Tracking"
-              width={350}
-              height={350}
-            />
-         </div>
-
-          <div className="flex-1 rounded-2xl bg-blue-600 p-12 text-white shadow-lg space-y-4">
-            <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-              Application Tracking
-            </h4>
-           <p className="mt-2 text-blue-100">
-  Maintain a clear overview of all your job applications and track their
-  progress in real time.
-</p>
-
-<p className="mt-2 text-blue-100">
-  Stay organized with application statuses, submission dates, and employer
-  responses — all in one place.
-</p>
-
-<h4 className="scroll-m-20 mt-6 text-xl font-semibold tracking-tight text-white">
-  Stay Interview-Ready
-</h4>
-
-<p className="mt-2 text-blue-100">
-  Never miss an update from employers across the country. Keep track of
-  interview calls, follow-ups, and next steps with confidence.
-</p>
-
-<p className="mt-2 text-blue-100">
-  With everything centralized, you can focus less on managing applications and
-  more on preparing to succeed.
-</p>
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-48 px-8"
-      >
-        <div className="mx-auto flex max-w-7xl flex-col gap-16 md:flex-row">
-          <div className="flex-1 space-y-4">
-            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-gray-700">
-              Application Activity
-            </h3>
-            <p className="text-gray-500">
-              Visual insights help you understand your job search behavior.
-            </p>
-            <p className="text-gray-500">
-              Consistency and timing often play a critical role in responses.
-            </p>
-          </div>
-
-          <div className="flex-1 rounded-2xl bg-white p-10 shadow-lg">
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="applications"
-                  stroke="#2563EB"
-                  strokeWidth={3}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        className="py-48 px-8"
-      >
-        <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-3">
-          {[
-            {
-              title: "Explore Jobs",
-              desc: "Discover roles from companies actively hiring talent.",
-              icon: <Briefcase className="h-8 w-8 text-blue-600" />,
-            },
-            {
-              title: "Track Progress",
-              desc: "Monitor application stages and employer responses.",
-              icon: <ClipboardList className="h-8 w-8 text-blue-600" />,
-            },
-            {
-              title: "Get Hired Faster",
-              desc: "Apply strategically and improve your interview chances.",
-              icon: <Rocket className="h-8 w-8 text-blue-600" />,
-            },
-          ].map((card, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -10 }}
-              className="rounded-2xl border border-gray-200 bg-white p-12 shadow-lg hover:shadow-xl"
-            >
-              <div className="mb-5">{card.icon}</div>
-              <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-gray-700">
-                {card.title}
-              </h4>
-              <p className="mt-4 text-gray-500">{card.desc}</p>
-            </motion.div>
+              <h4 className="text-xl font-bold mb-3">{f.title}</h4>
+              <p className="text-slate-500">{f.desc}</p>
+            </div>
           ))}
         </div>
-      </motion.section>
+      </section>
 
-      <footer className="border-t border-gray-200 py-20">
-        <div className="mx-auto max-w-7xl text-center text-sm text-gray-500 space-y-2">
-          <div className="font-semibold">
-            <span className="text-gray-700">Job</span>
-            <span className="text-blue-600">ify</span>
+    
+      <section className="mx-auto max-w-7xl px-6 py-24">
+        <div className="mb-12 flex  justify-between items-center">
+          <div>
+            <h3 className="text-3xl font-black ">Explore Categories</h3>
+            <p className="text-slate-500">High-growth industries hiring now</p>
           </div>
-          <p>Helping you find the right opportunity.</p>
+          <Link href="#" className="text-sm font-bold text-blue-600">
+            Browse All →
+          </Link>
+        </div>
+<div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+      <Code className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Technology</h4>
+    <p className="text-slate-500">12,430 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-100 text-orange-600">
+      <Palette className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Product Design</h4>
+    <p className="text-slate-500">3,120 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+      <Landmark className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Fintech & Banking</h4>
+    <p className="text-slate-500">5,890 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 text-purple-600">
+      <Megaphone className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Digital Marketing</h4>
+    <p className="text-slate-500">4,520 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+      <HeartPulse className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Healthcare</h4>
+    <p className="text-slate-500">2,100 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+      <BarChart3 className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Data Science</h4>
+    <p className="text-slate-500">1,840 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+      <Headset className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Customer Success</h4>
+    <p className="text-slate-500">6,310 open positions</p>
+  </motion.div>
+
+  <motion.div
+    whileHover={{ y: -8 }}
+    transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm hover:shadow-xl"
+  >
+    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+      <Grid className="h-8 w-8" />
+    </div>
+    <h4 className="text-xl font-bold mb-3">Other Roles</h4>
+    <p className="text-slate-500">15,000+ open positions</p>
+  </motion.div>
+</div>
+
+      </section>
+
+      <section className="py-32 px-6">
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+    className="mx-auto max-w-6xl rounded-3xl bg-gradient-to-br from-blue-600 to-blue-800 px-10 py-24 text-white shadow-2xl"
+  >
+    <motion.h3
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.1 }}
+      className="text-center text-4xl md:text-5xl font-black mb-20"
+    >
+      Getting hired is simple
+    </motion.h3>
+
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.15,
+          },
+        },
+      }}
+      className="grid gap-16 md:grid-cols-3"
+    >
+     
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: { opacity: 1, y: 0 },
+        }}
+        whileHover={{ y: -10, scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+        className="text-center"
+      >
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white text-blue-600 shadow-xl">
+          <UserPlus className="h-8 w-8" />
+        </div>
+        <h4 className="text-2xl font-black mb-3">Build Profile</h4>
+        <p className="text-white/75 max-w-xs mx-auto">
+          Create your digital resume and showcase your strongest skills.
+        </p>
+      </motion.div>
+
+      
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: { opacity: 1, y: 0 },
+        }}
+        whileHover={{ y: -10, scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+        className="text-center"
+      >
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white text-blue-600 shadow-xl">
+          <SearchCheck className="h-8 w-8" />
+        </div>
+        <h4 className="text-2xl font-black mb-3">Match & Apply</h4>
+        <p className="text-white/75 max-w-xs mx-auto">
+          Discover AI-matched roles that align with your ambitions.
+        </p>
+      </motion.div>
+
+     
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 30 },
+          visible: { opacity: 1, y: 0 },
+        }}
+        whileHover={{ y: -10, scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+        className="text-center"
+      >
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white text-blue-600 shadow-xl">
+          <PartyPopper className="h-8 w-8" />
+        </div>
+        <h4 className="text-2xl font-black mb-3">Land Your Job</h4>
+        <p className="text-white/75 max-w-xs mx-auto">
+          Interview directly and step confidently into your next role.
+        </p>
+      </motion.div>
+    </motion.div>
+  </motion.div>
+</section>
+
+  
+     
+      
+      <footer className="border-t border-slate-200 bg-white py-20">
+        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-slate-500 space-y-3">
+          <div className="text-xl font-bold text-slate-800">Jobify</div>
+          <p>Connecting world-class talent with world-class companies.</p>
           <p>© {new Date().getFullYear()} Jobify. All rights reserved.</p>
         </div>
       </footer>
-    </>
+    </main>
   );
 }

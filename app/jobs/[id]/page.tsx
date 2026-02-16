@@ -4,6 +4,10 @@ export const dynamic = "force-dynamic"
 
 import { Suspense, useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useUser } from "@/app/context/UserContext"
+import SkelitonLoading from "@/components/SkelitonLoading"
+import JobApplicationForm from "@/components/JobApplicationForm"
+import EditJobForm from "@/components/EditJobForm"
 
 import {
   AlertDialog,
@@ -16,11 +20,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
-
-import { useUser } from "@/app/context/UserContext"
-import SkelitonLoading from "@/components/SkelitonLoading"
-import JobApplicationForm from "@/components/JobApplicationForm"
-import EditJobForm from "@/components/EditJobForm"
+import Navbar from "@/components/Navbar"
 
 type Job = {
   id: number
@@ -29,6 +29,12 @@ type Job = {
   description: string
   created_at: string
   company_name?: string
+  company_logo?: string | null
+  salary:string
+  job_type:string
+  experience_level:string
+  work_mode:string
+
 }
 
 function JobDetailContent() {
@@ -44,7 +50,6 @@ function JobDetailContent() {
       ? localStorage.getItem("access_token")
       : null
 
-  // 🔹 Fetch job details
   useEffect(() => {
     if (!jobId) return
 
@@ -52,14 +57,11 @@ function JobDetailContent() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/${jobId}/`,
         {
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : {},
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       )
 
       if (!res.ok) return
-
       const data = await res.json()
       setJob(data)
     }
@@ -71,62 +73,156 @@ function JobDetailContent() {
     return <SkelitonLoading />
   }
 
-  // 🔹 Delete job (employer only)
   const handleDeleteJob = async () => {
     if (!token) return
 
-    const res = await fetch(
+    await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/delete/${jobId}/`,
       {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       }
     )
 
-    if (!res.ok) return
     router.push("/employer/jobs")
   }
 
   return (
-    <div className="min-h-screen bg-blue-50 py-16 px-6">
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-10 shadow-lg">
-        <h1 className="text-4xl font-bold text-gray-900">
-          {job.title}
-        </h1>
-
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-500">
-          <span>📍 {job.location}</span>
-          {job.company_name && <span>🏢 {job.company_name}</span>}
-          <span>
-            🗓️ {new Date(job.created_at).toLocaleDateString()}
-          </span>
+    <>
+    <Navbar/>
+   <div className="mt-25 bg-slate-50">
+     <div className="min-h-screen  pb-32">
+     
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+        <div className="max-w-screen-md mx-auto h-14 flex items-center justify-center font-bold">
+          Job Details
         </div>
+      </header>
 
-        <div className="mt-8 space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800">
+      <main className="max-w-screen-md mx-auto">
+        {/* HEADER */}
+        <section className="p-4 pt-6 space-y-4">
+         <div className="flex gap-4 items-start">
+  <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+    {job.company_logo ? (
+      <img
+        src={job.company_logo}
+        alt={job.company_name || "Company logo"}
+        className="size-20 rounded-lg object-contain"
+      />
+    ) : (
+      <div className="size-20 rounded-lg bg-slate-100 flex items-center justify-center text-xl font-bold text-slate-500">
+        {job.company_name?.[0] ?? "C"}
+      </div>
+    )}
+  </div>
+
+  <div className="flex flex-col gap-1">
+    <h1 className="text-2xl font-bold">{job.title}</h1>
+
+    <p className="text-blue-600 font-semibold text-lg">
+      {job.company_name ?? "Company"}
+    </p>
+
+    <p className="text-sm text-slate-500 flex items-center gap-1">
+      Posted {new Date(job.created_at).toLocaleDateString()}
+    </p>
+  </div>
+</div>
+
+        </section>
+
+        {/* SUMMARY GRID */}
+   <section className="px-4 ">
+  <div className="grid grid-cols-2 gap-3">
+  
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="text-blue-600">
+        <span className="material-symbols-outlined">payments</span>
+      </div>
+      <div>
+        <h2 className="text-sm font-bold">{job.salary}</h2>
+        <p className="text-xs text-slate-500">Salary Range</p>
+      </div>
+    </div>
+
+   
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="text-blue-600">
+        <span className="material-symbols-outlined">home_work</span>
+      </div>
+      <div>
+        <h2 className="text-sm font-bold">{job.work_mode}</h2>
+        <p className="text-xs text-slate-500">Work Mode</p>
+      </div>
+    </div>
+
+  
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="text-blue-600">
+        <span className="material-symbols-outlined">trending_up</span>
+      </div>
+      <div>
+        <h2 className="text-sm font-bold">{job.experience_level}</h2>
+        <p className="text-xs text-slate-500">Experience</p>
+      </div>
+    </div>
+
+  
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="text-blue-600">
+        <span className="material-symbols-outlined">location_on</span>
+      </div>
+      <div>
+        <h2 className="text-sm font-bold">{job.location}</h2>
+        <p className="text-xs text-slate-500">Location</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+        {/* DESCRIPTION */}
+        <section className="mt-6">
+          <h2 className="px-4 text-xl font-bold">
             Job Description
           </h2>
-          <p className="whitespace-pre-line text-gray-700">
+          <p className="px-4 mt-3 text-slate-700 whitespace-pre-line">
             {job.description}
           </p>
-        </div>
+        </section>
 
-        <div className="fixed bottom-10 right-10 flex gap-3">
+        {/* COMPANY */}
+        <section className="mt-8 px-4">
+          <div className="rounded-2xl border bg-white p-6 flex gap-31">
+             <img
+              src={job.company_logo}
+              alt={job.company_name || "Company logo"}
+              className="ml-4 size-16 rounded-lg object-contain"
+            />
+            <h3 className="font-bold mb-2 text-blue-400">
+              About {job.company_name ?? "Company"}
+            </h3>
+           
+            
+          </div>
+        </section>
+      </main>
+
+      {/* STICKY BOTTOM BAR */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+        <div className="max-w-screen-md mx-auto flex gap-3 justify-end">
           {user?.role === "candidate" ? (
             <JobApplicationForm jobId={jobId} />
           ) : (
             <>
               <EditJobForm />
-
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button className="bg-red-600 px-6 py-2 text-white rounded-md">
+                  <button className="px-4 py-2 bg-red-600 text-white rounded-lg">
                     Delete
                   </button>
                 </AlertDialogTrigger>
-
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
@@ -136,16 +232,15 @@ function JobDetailContent() {
                       This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-
                   <AlertDialogFooter>
                     <AlertDialogCancel>
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteJob}
-                      className="bg-red-600 hover:bg-red-700"
+                      className="bg-red-600"
                     >
-                      Yes, delete
+                      Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -155,7 +250,8 @@ function JobDetailContent() {
         </div>
       </div>
     </div>
-  )
+   </div>
+ </> )
 }
 
 export default function JobDetailPage() {

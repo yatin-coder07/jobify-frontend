@@ -1,11 +1,23 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
+
 import { useEffect, useState } from "react"
+import SidebarComponent from "@/components/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import SkelitonLoading from "@/components/SkelitonLoading"
-import { motion } from "framer-motion"
-import Image from "next/image"
+
+import {
+  Search,
+ 
+  Bell,
+  HelpCircle,
+
+} from "lucide-react"
+import Link from "next/link"
+import { useSearchParams, useRouter } from "next/navigation"
 
 type Application = {
   id: number
@@ -14,38 +26,59 @@ type Application = {
   cover_letter: string
   resume_url?: string
   applied_at: string
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
+  candidate_name?: string
+  candidate_profile_image?: string
+  candidate_profile_id?: number
+  status: "new" | "accepted" | "rejected"
 }
 
 export default function ApplicantsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const searchFromUrl = searchParams.get("search") || ""
+
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
+  const [search, setSearch] = useState(searchFromUrl)
+
+  /* ---------------- SEARCH HANDLER ---------------- */
+  const handleSearchChange = (value: string) => {
+    setSearch(value)
+
+    if (value.trim()) {
+      router.replace(`?search=${encodeURIComponent(value)}`, {
+        scroll: false,
+      })
+    } else {
+      router.replace("?", { scroll: false })
+    }
+  }
 
   useEffect(() => {
+    setSearch(searchFromUrl)
+  }, [searchFromUrl])
+
+  /* ---------------- FETCH APPLICATIONS ---------------- */
+  useEffect(() => {
     const fetchApplications = async () => {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("access_token")
-          : null
+      setLoading(true)
+      const token = localStorage.getItem("access_token")
+
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/employer/`
+      )
+
+      if (searchFromUrl) {
+        url.searchParams.set("search", searchFromUrl)
+      }
 
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/employer/`,
-          {
-            headers: token
-              ? { Authorization: `Bearer ${token}` }
-              : {},
-          }
-        )
+        const res = await fetch(url.toString(), {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
 
-        if (!res.ok) {
-          setApplications([])
-          return
-        }
+        if (!res.ok) throw new Error("Failed to fetch")
 
         const data = await res.json()
         setApplications(Array.isArray(data) ? data : [])
@@ -58,132 +91,188 @@ export default function ApplicantsPage() {
     }
 
     fetchApplications()
-  }, [])
+  }, [searchFromUrl])
 
-  if (loading) {
-    return <SkelitonLoading />
+  /* ---------------- UPDATE STATUS ---------------- */
+  const updateApplicationStatus = async (
+    applicationId: number,
+    newStatus: "accepted" | "rejected"
+  ) => {
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/employer/${applicationId}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      )
+
+      if (!res.ok) throw new Error("Failed to update")
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === applicationId ? { ...app, status: newStatus } : app
+        )
+      )
+
+      setOpenDropdownId(null)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
+  /* ---------------- DELETE APPLICATION ---------------- */
+  const handleDeleteApplication = async (applicationId: number) => {
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/applications/employer/${applicationId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!res.ok) throw new Error("Delete failed")
+
+      setApplications((prev) =>
+        prev.filter((app) => app.id !== applicationId)
+      )
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  if (loading) return <SkelitonLoading />
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <section className="pt-32 pb-24 text-center px-6">
-        <motion.h1
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-800"
-        >
-          Applicants
-        </motion.h1>
+    <div className="flex min-h-screen bg-background-light">
+      <SidebarComponent />
 
-        <motion.p
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.1 }}
-          className="mt-6 max-w-2xl mx-auto text-lg text-gray-500"
-        >
-          Review candidates who applied to your job postings.
-        </motion.p>
-      </section>
-
-      {/* CONTENT */}
-      <section className="pb-32 px-6">
-        <div className="mx-auto max-w-5xl">
-          {applications.length === 0 ? (
-            /* ✅ EMPTY STATE */
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="flex flex-col items-center text-center space-y-6">
-                <Image
-                  src="/logo.png"
-                  alt="Jobify"
-                  width={100}
-                  height={100}
-                  className="opacity-70"
-                />
-
-                <h2 className="text-2xl font-semibold text-gray-700">
-                  No applications yet
-                </h2>
-
-                <p className="max-w-md text-gray-500 text-sm leading-relaxed">
-                  When candidates apply to your job postings, their
-                  applications will appear here for review.
-                </p>
-              </div>
+      <main className="ml-64 flex-1 flex flex-col">
+        <header className="bg-white border-b px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold">Your Applicants</h2>
+            <div className="flex gap-2">
+              <button className="p-2 rounded-full hover:bg-slate-100">
+                <Bell size={18} />
+              </button>
+              <button className="p-2 rounded-full hover:bg-slate-100">
+                <HelpCircle size={18} />
+              </button>
             </div>
-          ) : (
-           
-            <div className="space-y-10">
-              {applications.map((app) => (
-                <motion.div
-                  key={app.id}
-                  variants={fadeUp}
-                  initial="hidden"
-                  animate="visible"
+          </div>
+
+          <div className="flex gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                placeholder="Search by name or job title..."
+                className="w-full bg-slate-100 rounded-lg py-2.5 pl-10 pr-4 text-sm"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+          <p className="text-sm font-semibold text-slate-600">
+            {applications.length} Total Applicants
+          </p>
+
+          {applications.map((app) => (
+            <Card key={app.id} className="rounded-xl border">
+              <CardHeader className="flex flex-row justify-between">
+                <div>
+                  <CardTitle>{app.job_title}</CardTitle>
+                  <p className="text-sm text-slate-500">
+                    📍 {app.job_location}
+                  </p>
+                </div>
+
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-bold text-white ${
+                    app.status === "accepted"
+                      ? "bg-green-600"
+                      : app.status === "rejected"
+                      ? "bg-red-600"
+                      : "bg-blue-400"
+                  }`}
                 >
-                  <Card className="rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-2xl font-semibold text-gray-900">
-                        {app.job_title}
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        📍 {app.job_location}
-                      </p>
-                    </CardHeader>
+                  {app.status}
+                </span>
+              </CardHeader>
 
-                    <CardContent className="space-y-6">
-                      {/* Cover Letter */}
-                      {app.cover_letter && (
-                        <div>
-                          <p className="font-semibold text-gray-700 mb-2">
-                            ✉️ Cover Letter
-                          </p>
-                          <p className="text-sm text-gray-700 whitespace-pre-line rounded-xl border bg-gray-50 p-4 max-h-40 overflow-y-auto">
-                            {app.cover_letter}
-                          </p>
-                        </div>
-                      )}
+              <CardContent className="space-y-4">
+                <Link
+                  href={`/profile/candidate/${app.candidate_profile_id}`}
+                  className="flex items-center gap-4"
+                >
+                  <img
+                    src={app.candidate_profile_image || "/user-avatar.png"}
+                    className="size-14 rounded-full border object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold">{app.candidate_name}</p>
+                    <p className="text-xs text-slate-500">Applicant</p>
+                  </div>
+                </Link>
 
-                      {/* Applied Date */}
-                      <p className="text-sm">
-                        <span className="font-semibold text-blue-600">
-                          Applied on:
-                        </span>{" "}
-                        <span className="text-gray-600">
-                          {new Date(app.applied_at).toLocaleDateString()}
-                        </span>
-                      </p>
+                {app.cover_letter && (
+                  <p className="text-sm bg-slate-50 p-4 rounded-lg">
+                    {app.cover_letter}
+                  </p>
+                )}
 
-                      {/* Resume Actions */}
-                      {app.resume_url && (
-                        <div className="flex gap-4">
-                          <a
-                            href={app.resume_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button variant="outline">
-                              View Resume
-                            </Button>
-                          </a>
+                <div className="flex gap-3">
+                  {app.resume_url && (
+                    <a href={app.resume_url} target="_blank">
+                      <Button variant="outline">View Resume</Button>
+                    </a>
+                  )}
 
-                          <a href={app.resume_url} download>
-                            <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                              Download Resume
-                            </Button>
-                          </a>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                  <Button
+                    onClick={() =>
+                      updateApplicationStatus(app.id, "accepted")
+                    }
+                    className="bg-green-500 hover:bg-green-700"
+                  >
+                    Accept
+                  </Button>
+
+                  <Button
+                    variant="destructive"
+                    onClick={() =>
+                      updateApplicationStatus(app.id, "rejected")
+                    }
+                  >
+                    Reject
+                  </Button>
+
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDeleteApplication(app.id)}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </section>
+      </main>
     </div>
   )
 }
