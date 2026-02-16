@@ -1,19 +1,20 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
+
 import { useEffect, useState } from "react"
 import SidebarComponent from "@/components/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import SkelitonLoading from "@/components/SkelitonLoading"
-import { motion, AnimatePresence } from "framer-motion"
+
 import {
   Search,
-  ChevronDown,
+ 
   Bell,
   HelpCircle,
-  Menu,
-  X,
-  Check,
+
 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
