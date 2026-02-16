@@ -15,6 +15,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import SkelitonLoading from "@/components/SkelitonLoading"
+import Link from "next/link"
 
 type Application = {
   id: number
@@ -113,9 +114,11 @@ export default function CandidateApplicationsPage() {
       {/* TOP BAR */}
       <div className="sticky top-0 z-20 bg-background-light/80 backdrop-blur border-b">
         <div className="flex items-center justify-between px-4 py-3">
+         <Link href={"/"}>
           <span className="material-symbols-outlined cursor-pointer">
             arrow_back_ios
           </span>
+         </Link>
           <h2 className="font-bold text-lg">My Applications</h2>
           <span className="material-symbols-outlined cursor-pointer">
             notifications

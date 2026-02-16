@@ -10,6 +10,7 @@ const Page = () => {
   })
 
   const [error, setError] = useState("")
+  const[loading, setLoading] = useState(false)
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -22,6 +23,7 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login/`,
@@ -65,7 +67,7 @@ const Page = () => {
     }else{
       window.location.href = "/profile/candidate/create"
     }
-
+   setLoading(false)
   
   }
 
@@ -107,9 +109,10 @@ const Page = () => {
 
         <button
           type="submit"
-          className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className={`w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 ${loading ? "cursor-not-allowed opacity-50 " : ""}`}
+          disabled={loading}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         <div className="pt-4 border-t text-center space-y-3">

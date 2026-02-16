@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import JobCard from "@/components/JobCard"
 import SkelitonLoading from "@/components/SkelitonLoading"
-import { motion } from "framer-motion"
+
 import Navbar from "@/components/Navbar"
 
 type Job = {
