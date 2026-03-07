@@ -50,6 +50,12 @@ const[submitting, setSubmitting]=useState(false)
 useEffect(() => {
   const token = localStorage.getItem("access_token");
 
+    if (!token) {
+    console.log("No token found");
+    router.push("/login");
+    return;
+  }
+
   fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/profile/`, {
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -127,14 +133,14 @@ formData.append("linkedin_link", linkedinLink);
     );
 
     if (!profileRes.ok) {
-  const err = await profileRes.json();
+  const err = await profileRes.text();
   console.log(err);
   alert("Failed to create profile");
   setSubmitting(false);
   return;
 }
 
-
+if (education.institution && education.degree && education.start_year) {
    const educationRes= await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/candidate/education/`, {
       method: "POST",
       headers: {
@@ -144,15 +150,15 @@ formData.append("linkedin_link", linkedinLink);
       body: JSON.stringify({
         institution: education.institution,
         degree: education.degree,
-        start_year: education.start_year,
-        end_year: education.is_current ? null : education.end_year,
+        start_year: Number(education.start_year),
+       end_year: education.is_current ? null : Number(education.end_year),
+        is_current: education.is_current,
       }),
     })
     if(!educationRes.ok){
-        alert("error submitting Education fields")
-        setSubmitting(false);
-       return;
-    }
+  console.log(await educationRes.text());
+  alert("Education failed but profile created");
+}}
 
     if (showExperience) {
      const experienceRes= await fetch(
@@ -169,7 +175,7 @@ formData.append("linkedin_link", linkedinLink);
             role: experience.role,
             start_date: experience.start_date,
             end_date: experience.is_current ? null : experience.end_date,
-            is_current: experience.is_current,
+          
           }),
         }
       );
