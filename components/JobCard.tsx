@@ -2,14 +2,19 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { MapPin, Calendar, Bookmark } from "lucide-react"
+import { MapPin, Calendar, Bookmark, Sparkles } from "lucide-react"
 
+// Extended type definition to support dynamic AI match fields seamlessly
 type Job = {
   id: number
   title: string
   description: string
   location: string
   created_at: string
+  salary?: string
+  experience_level?: string
+  work_mode?: string
+  match_score?: number // The dynamic percentage value from your semantic database match
 }
 
 type Props = {
@@ -34,15 +39,32 @@ const JobCard = ({ job }: Props) => {
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  {job.title}
-                </h4>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h4 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {job.title}
+                  </h4>
+                  
+                  {/* ✨ AI Match Badge displayed whenever a match_score exists */}
+                  {job.match_score !== undefined && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-2.5 py-0.5 text-xs font-black text-white shadow-sm shadow-indigo-500/20">
+                      <Sparkles className="h-3 w-3 text-amber-300 fill-amber-300" />
+                      {job.match_score}% Match
+                    </span>
+                  )}
+                </div>
+                
                 <p className="mt-1 text-sm font-semibold text-slate-600">
                   Company Name
                 </p>
               </div>
 
-              <button className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevents clicking the bookmark icon from triggering the link redirect
+                }}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors"
+              >
                 <Bookmark size={18} />
               </button>
             </div>
@@ -53,9 +75,22 @@ const JobCard = ({ job }: Props) => {
                 {job.location}
               </span>
 
+              {/* Dynamic fallbacks if your database has varied string contents */}
               <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-600">
-                Full-time
+                {job.work_mode || "Full-time"}
               </span>
+
+              {job.experience_level && (
+                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">
+                  {job.experience_level}
+                </span>
+              )}
+
+              {job.salary && (
+                <span className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 border border-emerald-100">
+                  {job.salary}
+                </span>
+              )}
             </div>
 
             <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-slate-600">

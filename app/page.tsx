@@ -23,6 +23,7 @@ import {
   PartyPopper,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import ResumeUploadHero from "@/components/ResumeUploadHero";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -45,71 +46,7 @@ export default function LandingPage() {
      <Navbar/>
 
       {/* HERO */}
-      <motion.section
-  initial="hidden"
-  animate="visible"
-  variants={container}
-  className="mx-auto max-w-7xl px-6 py-28"
->
-  <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-blue-600 to-blue-800 px-10 py-28 text-center text-white shadow-2xl">
-    
-    {/* subtle background glow */}
-    <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-    <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-black/20 blur-3xl" />
-
-    <motion.div
-      variants={container}
-      className="relative mx-auto max-w-4xl space-y-10"
-    >
-      <motion.div
-        variants={item}
-        className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest"
-      >
-        <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-        50,000+ Active Roles
-      </motion.div>
-
-      <motion.h1
-        variants={item}
-        className="text-5xl md:text-7xl font-black leading-tight"
-      >
-        Where the world’s best{" "}
-        <span className="text-blue-200">talent</span> finds its future
-      </motion.h1>
-
-      <motion.p
-        variants={item}
-        className="mx-auto max-w-2xl text-xl text-white/80"
-      >
-        Connecting visionary companies with world-class professionals.
-        Turning skills into careers.
-      </motion.p>
-
-      <motion.div
-        variants={item}
-        className="flex flex-col sm:flex-row justify-center gap-5 pt-4"
-      >
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-          <Link
-            href="/jobs"
-            className="inline-block rounded-full bg-white px-10 py-5 text-lg font-bold text-blue-600 shadow-xl"
-          >
-            Get Started
-          </Link>
-        </motion.div>
-
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-          <Link
-            href="/jobs"
-            className="inline-block rounded-full border border-white/30 bg-white/10 px-10 py-5 text-lg font-bold"
-          >
-            Find a job
-          </Link>
-        </motion.div>
-      </motion.div>
-    </motion.div>
-  </div>
-</motion.section>
+      <ResumeUploadHero />
      
       {/* WHY JOBIFY */}
       <section className="mx-auto max-w-7xl px-6 py-24">
