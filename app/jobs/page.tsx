@@ -4,12 +4,12 @@ export const dynamic = "force-dynamic"
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 import JobCard from "@/components/JobCard"
 import SkelitonLoading from "@/components/SkelitonLoading"
 import Navbar from "@/components/Navbar"
-import { Sparkles, RefreshCw } from "lucide-react"
+import { Sparkles, RefreshCw, Search, SlidersHorizontal, Layers, Inbox } from "lucide-react"
 
-// Updated type definition to support the AI matching payload fields seamlessly
 type Job = {
   id: number
   title: string
@@ -19,14 +19,13 @@ type Job = {
   salary?: string
   experience_level?: string
   work_mode?: string
-  match_score?: number // The dynamic temporary annotation parameter from your matching backend
+  match_score?: number
 }
 
 function JobsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Extract both potential URL parameter contexts
   const searchFromUrl = searchParams.get("search") || ""
   const resumeIdFromUrl = searchParams.get("resumeId") || ""
 
@@ -34,22 +33,18 @@ function JobsContent() {
   const [jobs, setJobs] = useState<Job[] | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Sync keyword text input with URL history mutations
   useEffect(() => {
     setSearch(searchFromUrl)
   }, [searchFromUrl])
 
   useEffect(() => {
     const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null
+      typeof window !== "undefined" ? localStorage.getItem("access_token") : null
 
     async function fetchJobs() {
       setLoading(true)
       let urlString = ""
 
-      // 🧠 DECISION POINT: Are we performing an AI Vector Match or a Regular List/Search?
       if (resumeIdFromUrl) {
         urlString = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/jobs/match/${resumeIdFromUrl}/`
       } else {
@@ -70,7 +65,6 @@ function JobsContent() {
         const data = await res.json()
 
         if (res.ok) {
-          // If using the semantic match endpoint, extract your array from the "matches" key wrapper
           if (resumeIdFromUrl) {
             setJobs(data.matches || [])
           } else {
@@ -94,7 +88,6 @@ function JobsContent() {
   const handleSearchChange = (value: string) => {
     setSearch(value)
 
-    // Clear resume match parameters if the user starts typing keyword overrides
     if (value.trim()) {
       router.replace(`?search=${encodeURIComponent(value)}`, {
         scroll: false,
@@ -110,136 +103,173 @@ function JobsContent() {
   }
 
   return (
-    <>
-      <section className="border-b border-slate-200 py-10 bg-blue-50">
-        <div>
-          <Navbar />
-        </div>
-        <div className="max-w-[1440px] mx-auto px-6 mt-18">
-          {/* AI Active Indicator Sub-Banner if filtering by Resume Embeddings */}
-          {resumeIdFromUrl && (
-            <div className="mb-6 flex max-w-xl items-center justify-between rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                  <Sparkles className="h-5 w-5 text-amber-300" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm">AI Semantic Matching Active</p>
-                  <p className="text-xs text-purple-100">Displaying options optimized for your resume profile metrics</p>
-                </div>
-              </div>
-              <button 
-                onClick={clearAiFilter}
-                className="flex items-center gap-1 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/20"
-              >
-                <RefreshCw className="h-3 w-3" /> Clear Filter
-              </button>
-            </div>
-          )}
+    <div className="bg-slate-50 min-h-screen text-slate-900 antialiased selection:bg-blue-500/10">
+      <Navbar />
 
-          <div className="flex flex-col lg:flex-row items-end gap-4 bg-white p-2 rounded-2xl shadow-xl border border-slate-100 max-w-600">
-            <div className="flex-1 w-full">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-4">
-                What and Where
-              </label>
+      {/* SEARCH AND AI STATUS HEADER CONTROL HUB */}
+      <section className="border-b border-slate-200/80 bg-white pt-28 pb-10 shadow-sm relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+          <AnimatePresence mode="wait">
+            {resumeIdFromUrl && (
+              <motion.div 
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 p-5 text-white shadow-xl border border-white/5 relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#3b82f615,transparent_45%)] pointer-events-none" />
+                <div className="flex items-center gap-4 relative z-10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
+                    <Sparkles className="h-5 w-5 text-blue-400 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base tracking-tight flex items-center gap-2">
+                      Semantic Matching Active
+                    </h3>
+                    <p className="text-xs text-slate-300 font-medium mt-0.5">
+                      Displaying prioritized positions dynamically scored for your vector profile parameters.
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={clearAiFilter}
+                  className="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/15 px-4 py-2.5 text-xs font-bold transition duration-150 active:scale-95 border border-white/10 shrink-0 relative z-10"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> 
+                  <span>Reset Matching Grid</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* MAIN INPUT COMPONENT CONTAINER */}
+          <div className="flex flex-col md:flex-row items-stretch gap-3 bg-slate-100/80 p-2 rounded-2xl border border-slate-200/40 max-w-3xl">
+            <div className="flex-1 relative flex items-center">
+              <Search className="absolute left-4 h-5 w-5 text-slate-400 pointer-events-none" />
               <input
                 value={search}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder={resumeIdFromUrl ? "Type to search manually instead..." : "Job title, keywords, or company"}
-                className="w-full h-14 rounded-xl bg-slate-100 px-5 font-medium focus:ring-2 focus:ring-blue-500/20"
+                placeholder={resumeIdFromUrl ? "Override AI and scan manually instead..." : "Job title, target focus, or core enterprise keyword..."}
+                className="w-full h-14 rounded-xl bg-white border border-slate-200/60 pl-12 pr-4 font-medium text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition duration-150"
               />
             </div>
-
-            <button className="w-full lg:w-auto px-10 h-14 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20">
-              Find Jobs
+            <button className="px-8 h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl shadow-md transition duration-150 active:scale-95 shrink-0">
+              Execute Search
             </button>
           </div>
         </div>
       </section>
 
-      <main className="max-w-[1440px] mx-auto px-6 py-8 flex gap-8">
-        <aside className="w-[300px] shrink-0 space-y-8 hidden md:block">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-xl">Filters</h2>
-            <button className="text-sm font-semibold text-blue-600" onClick={clearAiFilter}>
-              Reset all
+      {/* CORE CONTROL PLATFORM LAYOUT BLOCK */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex gap-8">
+        
+        {/* ASIDE LEFT COLUMN: ADVANCED PROPERTY MATRIX FILTERS */}
+        <aside className="w-[280px] shrink-0 space-y-7 hidden lg:block bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm h-fit sticky top-28">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <h2 className="font-black text-base tracking-tight flex items-center gap-2 text-slate-900">
+              <SlidersHorizontal className="h-4 w-4 text-slate-400" />
+              <span>Workspace Filters</span>
+            </h2>
+            <button 
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 transition" 
+              onClick={clearAiFilter}
+            >
+              Reset All
             </button>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-bold">Job Type</h3>
-            {["Full-time", "Contract", "Part-time"].map((t) => (
-              <label
-                key={t}
-                className="flex items-center gap-3 cursor-pointer"
-              >
-                <input type="checkbox" className="size-5 rounded" />
-                <span className="text-sm font-medium text-slate-600">
-                  {t}
-                </span>
-              </label>
-            ))}
+          {/* JOB CLASSIFICATION MATRIX */}
+          <div className="space-y-3.5">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">Commitment Type</h3>
+            <div className="space-y-2.5">
+              {["Full-time", "Contract", "Part-time"].map((t) => (
+                <label key={t} className="flex items-center gap-3 cursor-pointer group text-slate-600 hover:text-slate-900 select-none">
+                  <input type="checkbox" className="size-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 transition cursor-pointer" />
+                  <span className="text-sm font-semibold transition-colors duration-150">{t}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-bold">Monthly Salary Range</h3>
-            <input type="range" className="w-full accent-blue-600" />
+          {/* COMPOSITE SALARY THRESHOLD */}
+          <div className="space-y-3.5 pt-2">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">Salary Parameters</h3>
+            <div className="space-y-2">
+              <input type="range" min="2000" max="25000" step="500" className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900" />
+              <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                <span>Base Base</span>
+                <span>$25k / mo</span>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-bold">Experience Level</h3>
-            {["Entry Level", "Mid Level", "Senior Level"].map((l) => (
-              <label key={l} className="flex items-center gap-3">
-                <input type="checkbox" className="size-5 rounded" />
-                <span className="text-sm font-medium text-slate-600">
-                  {l}
-                </span>
-              </label>
-            ))}
+          {/* EXPERIENCE CLASSIFICATION PARAMETERS */}
+          <div className="space-y-3.5 pt-2">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">Seniority Layer</h3>
+            <div className="space-y-2.5">
+              {["Entry Level", "Mid Level", "Senior Level"].map((l) => (
+                <label key={l} className="flex items-center gap-3 cursor-pointer group text-slate-600 hover:text-slate-900 select-none">
+                  <input type="checkbox" className="size-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 transition cursor-pointer" />
+                  <span className="text-sm font-semibold transition-colors duration-150">{l}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </aside>
 
-        <section className="flex-1 space-y-6">
-          <div className="flex items-center justify-between">
-            <p className="text-slate-500 font-medium">
-              Showing{" "}
-              <span className="font-bold text-slate-900">
-                {jobs?.length ?? 0}
-              </span>{" "}
-              jobs {resumeIdFromUrl && "matched by AI"}
+        {/* RIGHT COLUMN: ACTIVE OUTPUT STREAM */}
+        <section className="flex-1 space-y-5">
+          <div className="flex items-center justify-between bg-white border border-slate-200/60 p-4 rounded-xl shadow-sm">
+            <p className="text-slate-500 font-medium text-sm flex items-center gap-1.5">
+              <Layers className="h-4 w-4 text-slate-400" />
+              <span>
+                Found <span className="font-bold text-slate-900">{jobs?.length ?? 0}</span> matching options
+              </span>
             </p>
 
-            <select className="font-bold text-sm bg-transparent" defaultValue={resumeIdFromUrl ? "Most Relevant" : "Most Recent"}>
-              <option>Most Recent</option>
-              <option>Highest Salary</option>
-              <option>Most Relevant</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sort Matrix:</span>
+              <select className="font-bold text-xs bg-slate-50 border p-1.5 rounded-lg text-slate-700 outline-none focus:border-slate-300 cursor-pointer" defaultValue={resumeIdFromUrl ? "Most Relevant" : "Most Recent"}>
+                <option>Most Recent</option>
+                <option>Highest Salary</option>
+                <option>Most Relevant</option>
+              </select>
+            </div>
           </div>
 
+          {/* STREAM ITERATION LAYER */}
           {loading ? (
             <SkelitonLoading />
           ) : jobs && jobs.length > 0 ? (
-            <div
-              className="
-                custom-scrollbar
-                space-y-4
-                overflow-y-auto
-                pr-2
-                h-[calc(100vh-340px)]
-              "
-            >
+            <div className="custom-scrollbar space-y-4 overflow-y-auto pr-1.5 h-[calc(100vh-340px)] pb-12 rounded-xl">
               {jobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl bg-white p-14 text-center border">
-              No jobs found matching your criteria.
+            <div className="rounded-2xl bg-white p-16 text-center border border-slate-200/60 shadow-sm max-w-xl mx-auto mt-12 flex flex-col items-center justify-center space-y-4">
+              <div className="h-14 w-14 bg-slate-50 border rounded-2xl flex items-center justify-center text-slate-400 shadow-inner">
+                <Inbox className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900 tracking-tight text-lg">No Results Mapping</h3>
+                <p className="text-slate-400 font-medium text-sm mt-1 max-w-xs mx-auto leading-relaxed">
+                  No operational records coordinate with your target criteria. Refine your structural string tags or lower filters.
+                </p>
+              </div>
+              <button 
+                onClick={clearAiFilter}
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200/80 text-slate-700 font-bold text-xs rounded-xl transition duration-150"
+              >
+                Reset Core Search Matrix
+              </button>
             </div>
           )}
         </section>
       </main>
-    </>
+    </div>
   )
 }
 

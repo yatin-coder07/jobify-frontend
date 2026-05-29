@@ -60,16 +60,22 @@ const Page = () => {
       }
     )
 
-    if (checkRes.status === 404 && data.role === "candidate") {
-      window.location.href = "/"
-    }else if (checkRes.status === 404 && data.role === "employer") {
-      window.location.href = "/employer/dashboard"
-    }else if(checkRes.status === 200 && data.role === "employer"){
-      window.location.href = "/profile/employer/create"
-    }else{
-      window.location.href = "/profile/candidate/create"
+    const checkData = await checkRes.json()
+
+    if (checkData.exists) {
+      if (data.role === "employer") {
+        window.location.href = "/employer/dashboard"
+      } else {
+        window.location.href = "/"
+      }
+    } else {
+      if (data.role === "employer") {
+        window.location.href = "/profile/employer/create"
+      } else {
+        window.location.href = "/profile/candidate/create"
+      }
     }
-   setLoading(false)
+    setLoading(false)
   
   }
 
